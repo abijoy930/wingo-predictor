@@ -8,39 +8,36 @@ from threading import Thread
 
 app = Flask(__name__)
 
-# ✅ Read environment variables correctly
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-# ✅ Dummy training data (replace later with real Wingo scraping logic)
+# 🔍 Real Data Fetching Function (Simulated for now)
 def fetch_real_data():
-    return [random.randint(0, 9) for _ in range(100)]
+    return [random.randint(0, 9) for _ in range(100)]  # Future: replace with live scraper
 
-# ✅ Predict the most common number
+# 🤖 Prediction Logic (Simple for now)
 def train_and_predict(data):
     return max(set(data), key=data.count)
 
-# ✅ Send prediction to Telegram with color & size
+# ✅ Send Result to Telegram
 def send_to_telegram(prediction):
     color = "Green" if prediction % 2 == 0 else "Red"
-    big_small = "Big" if prediction >= 5 else "Small"
-    msg = f"📊 Prediction at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\nResult: {prediction} ({big_small}, {color})"
-    
+    size = "Big" if prediction >= 5 else "Small"
+    message = (
+        f"📢 Wingo Prediction\n"
+        f"🕒 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"🎯 Result: {prediction} ({size}, {color})"
+    )
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    response = requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
+    response = requests.post(url, data={"chat_id": CHAT_ID, "text": message})
+    print("Telegram sent:", response.status_code)
 
-    # ✅ Check Telegram response
-    if response.status_code != 200:
-        print(f"❌ Telegram Error: {response.text}")
-    else:
-        print(f"✅ Sent to Telegram: {prediction} ({big_small}, {color})")
-
-# ✅ Home route
+# 🌐 Home Page Route
 @app.route('/')
 def home():
     return "✅ Wingo Predictor Bot Is Running!"
 
-# ✅ Manual test route
+# 🧪 Manual Prediction Trigger
 @app.route('/predict')
 def predict_route():
     data = fetch_real_data()
@@ -48,19 +45,19 @@ def predict_route():
     send_to_telegram(pred)
     return f"✅ Prediction sent: {pred}"
 
-# ✅ Auto scheduler every 60 sec
+# 🔁 Background Scheduler for Auto Prediction
 def prediction_scheduler():
     while True:
         try:
             data = fetch_real_data()
             pred = train_and_predict(data)
             send_to_telegram(pred)
-            time.sleep(60)  # প্রতি ১ মিনিট পর পর প্রেডিকশন
+            time.sleep(60)  # প্রতি ১ মিনিটে
         except Exception as e:
-            print(f"❌ Error in scheduler: {e}")
+            print("Scheduler Error:", e)
             time.sleep(10)
 
-# ✅ Start server & thread
+# 🚀 Start Flask + Background Scheduler
 if __name__ == "__main__":
     Thread(target=prediction_scheduler).start()
     port = int(os.environ.get("PORT", 10000))
