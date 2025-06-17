@@ -1,0 +1,7 @@
+Flask>=2.0
+requests>=2.0
+beautifulsoup4
+lxml
+pandas
+scikit-learn
+schedule
